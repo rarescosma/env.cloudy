@@ -28,7 +28,7 @@ setup(
         'Programming Language :: Python :: 3',
     ],
     entry_points={
-        'console_scripts': ['cloudy=cloudy.__main__:cli'],
+        'console_scripts': ['cloudy=cloudy.cloudy:cli'],
     },
     keywords='',
     packages=find_packages(exclude=['docs', 'tests*']),

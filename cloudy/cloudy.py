@@ -1,74 +1,91 @@
-"""
-Opinionated screenshot watcher
-"""
 import os
-import subprocess
+import string
 from pathlib import Path
-from typing import Any, Callable, Dict
-from urllib.parse import quote_plus
+from random import choices
+from functools import partial, reduce
+from typing import Callable, Optional
 
-import pyinotify
-import requests
-import yaml
+import click
+from click import argument, group, option
 
-Url = str
-
-
-# Configuration
-def config_from_file(f: Path) -> Dict[str, Any]:
-    """Return parsed config from a YAML file"""
-    return yaml.safe_load(f.read_text()) or {}
+from . import lib
 
 
-# Watchin'
-def watch_dir(d: Path, handler: Callable = print) -> pyinotify.Notifier:
-    """Return a notifier for handling dir changes"""
-    wm = pyinotify.WatchManager()
-    wm.add_watch(d.name, pyinotify.IN_CLOSE_WRITE, rec=True)
-    return pyinotify.Notifier(wm, ProcessChange(handler=handler))
+@group()
+def cli():
+    """Wrap command group"""
+    pass
 
 
-class ProcessChange(pyinotify.ProcessEvent):
-    """Calls handler with the changed file path on CLOSE_WRITE"""
-    __handler: Callable
+@cli.command()
+def test():
+    """Run tests through CLI... I know, right?"""
+    # test config_from_file
+    c_path = Path(f'/tmp/{_random_str()}')
+    c_path.write_text('foo: bar')
+    assert lib.config_from_file(c_path) == dict(foo='bar')
 
-    def __init__(self, handler: Callable = print, **kargs: Any) -> None:
-        self.__handler = handler
-        super().__init__(**kargs)
-
-    def process_IN_CLOSE_WRITE(self, event):
-        """Handle CLOSE_WRITE"""
-        self.__handler(Path(os.path.join(event.path, event.name)))
+    print('OK!')
 
 
-# Processing
-def ssh_upload(dest: str, key: str, f: Path) -> Path:
-    """Upload file to destination using rsync/ssh"""
-    cmd = ['rsync', '-av', '-e', f'ssh -i {key}', str(f.absolute()), dest]
-    subprocess.check_output(cmd)
-    return f
+@cli.command()
+@argument(
+    'to_watch',
+    type=click.Path(exists=True, dir_okay=True, file_okay=False)
+)
+@option(
+    'config', '--config', '-c',
+    type=click.Path(exists=True, file_okay=True, dir_okay=False),
+    default=None
+)
+def watch(to_watch: str, config: Optional[str] = None):
+    cfg = lib.config_from_file(Path(config) if config else _config_path())
+
+    handler = _compose(
+        partial(
+            lib.ssh_upload,
+            cfg['ssh']['dest'],
+            cfg['ssh']['key']
+        ),
+        partial(
+            lib.bitly_shorten,
+            cfg['bitly_token'],
+            cfg['web_root']
+        ),
+        lib.copy_to_clipboard,
+        lib.show_notification,
+    )
+
+    notifier = lib.watch_dir(Path(to_watch), handler=handler)
+
+    while True:
+        try:
+            notifier.process_events()
+            if notifier.check_events():
+                notifier.read_events()
+        except KeyboardInterrupt:
+            notifier.stop()
+            break
 
 
-def bitly_shorten(token: str, web_root: str, f: Path) -> Url:
-    """Shorten the file URL through bitly"""
-    return requests.get(
-        'https://api-ssl.bitly.com/v3/shorten',
-        params={
-            'access_token': token,
-            'longUrl': f'{web_root}/{quote_plus(f.name)}',
-        }
-    ).json()['data']['url']
+def _random_str(n: int = 12) -> str:
+    """Produce a random string of length n"""
+    return ''.join(choices(string.ascii_uppercase + string.digits, k=n))
 
 
-def copy_to_clipboard(what: Url) -> Url:
-    """Put the input string into all known clipboards"""
-    # Primary + clipboard
-    xsel_proc = subprocess.Popen(['xsel', '-pbi'], stdin=subprocess.PIPE)
-    xsel_proc.communicate(bytes(what, encoding='utf-8'))
-    return what
+def _config_path(f_name: str = '../config.yaml') -> Path:
+    """Returns an absolute path to the config file"""
+    return Path(os.path.abspath(os.path.dirname(__file__))) / f_name
 
 
-def show_notification(what: Url) -> Url:
-    """Show a notification about the new screenshot"""
-    subprocess.check_output(['notify-send', 'New Screenshot', what])
-    return what
+def _compose(*functions: Callable) -> Callable:
+    """Compose a bunch of functions"""
+    return reduce(
+        lambda f, g: lambda x: f(g(x)),
+        functions[::-1],
+        lambda x: x
+    )
+
+
+if __name__ == '__main__':
+    cli()
