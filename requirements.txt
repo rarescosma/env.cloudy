@@ -1,4 +1,4 @@
-pyyaml
-bitly_api
-pyinotify
+pyinotify==0.9.6
+PyYAML==3.13
+requests==2.19.1
 
