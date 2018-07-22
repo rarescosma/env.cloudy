@@ -42,6 +42,7 @@ def test():
 )
 def watch(to_watch: str, config: Optional[str] = None):
     """Watch directory"""
+    print(f'Watching {to_watch}...')
     cfg = lib.config_from_file(Path(config) if config else _config_path())
 
     handler = _compose(
