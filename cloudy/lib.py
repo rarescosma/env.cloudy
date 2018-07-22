@@ -24,7 +24,7 @@ def config_from_file(f: Path) -> Dict[str, Any]:
 def watch_dir(d: Path, handler: Callable = print) -> pyinotify.Notifier:
     """Return a notifier for handling dir changes"""
     wm = pyinotify.WatchManager()
-    wm.add_watch(d.name, pyinotify.IN_CLOSE_WRITE, rec=True)
+    wm.add_watch(str(d), pyinotify.IN_CLOSE_WRITE, rec=True)
     return pyinotify.Notifier(wm, ProcessChange(handler=handler))
 
 

@@ -10,6 +10,8 @@ from click import argument, group, option
 
 from cloudy import lib
 
+PATH_ARG = partial(click.Path, exists=True, resolve_path=True)
+
 
 @group()
 def cli():
@@ -31,11 +33,11 @@ def test():
 @cli.command()
 @argument(
     'to_watch',
-    type=click.Path(exists=True, dir_okay=True, file_okay=False)
+    type=PATH_ARG(dir_okay=True, file_okay=False)
 )
 @option(
     'config', '--config', '-c',
-    type=click.Path(exists=True, file_okay=True, dir_okay=False),
+    type=PATH_ARG(dir_okay=False, file_okay=True),
     default=None
 )
 def watch(to_watch: str, config: Optional[str] = None):
