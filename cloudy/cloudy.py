@@ -57,10 +57,17 @@ def watch(to_watch: str, config: Optional[str] = None):
             cfg['web_root']
         ),
         lib.copy_to_clipboard,
+        lambda x: f'New Screenshot: {x}',
         lib.show_notification,
     )
 
-    notifier = lib.watch_dir(Path(to_watch), handler=handler)
+    error_handler = partial(lib.show_notification, urgency='critical')
+
+    notifier = lib.watch_dir(
+        Path(to_watch),
+        handler=handler,
+        error_handler=error_handler,
+    )
 
     while True:
         try:
