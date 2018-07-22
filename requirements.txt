@@ -1,0 +1,4 @@
+pyyaml
+bitly_api
+pyinotify
+
