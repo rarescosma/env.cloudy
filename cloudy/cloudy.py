@@ -8,7 +8,7 @@ from typing import Callable, Optional
 import click
 from click import argument, group, option
 
-from . import lib
+from cloudy import lib
 
 
 @group()
@@ -39,6 +39,7 @@ def test():
     default=None
 )
 def watch(to_watch: str, config: Optional[str] = None):
+    """Watch directory"""
     cfg = lib.config_from_file(Path(config) if config else _config_path())
 
     handler = _compose(
