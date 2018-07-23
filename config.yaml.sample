@@ -1,0 +1,6 @@
+images: /path/to/images
+web_root: https://example.com
+bitly_token: babafacecaca
+ssh:
+  dest: 'upload-user@server:/var/www/example.com/static/'
+  key: /path/to/ssh_key.pem
