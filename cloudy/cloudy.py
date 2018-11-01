@@ -3,6 +3,7 @@ import string
 from pathlib import Path
 from random import choices
 from functools import partial, reduce
+from subprocess import check_output
 from typing import Callable, Optional
 
 import click
@@ -44,18 +45,12 @@ def watch(to_watch: str, config: Optional[str] = None):
     """Watch directory"""
     print(f'Watching {to_watch}...')
     cfg = lib.config_from_file(Path(config) if config else _config_path())
+    exec_before = cfg.get('exec_before', [])
 
     handler = _compose(
-        partial(
-            lib.ssh_upload,
-            cfg['ssh']['dest'],
-            cfg['ssh']['key']
-        ),
-        partial(
-            lib.bitly_shorten,
-            cfg['bitly_token'],
-            cfg['web_root']
-        ),
+        partial(lib.effect_cmd, exec_before),
+        partial(lib.ssh_upload, cfg['ssh']['dest'], cfg['ssh']['key']),
+        partial(lib.bitly_shorten, cfg['bitly_token'], cfg['web_root']),
         lib.copy_to_clipboard,
         lambda x: f'New Screenshot: {x}',
         lib.show_notification,

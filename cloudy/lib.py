@@ -4,7 +4,7 @@ Opinionated screenshot watcher
 import os
 import subprocess
 from pathlib import Path
-from typing import Any, Callable, Dict
+from typing import Any, Callable, Dict, List
 from urllib.parse import quote_plus
 
 import pyinotify
@@ -50,8 +50,15 @@ class ProcessChange(pyinotify.ProcessEvent):
 
 
 # Processing
+def effect_cmd(cmd: List, _: Any) -> Any:
+    """Exec command as effect but proxy input value"""
+    if cmd:
+        subprocess.check_output(cmd)
+    return _
+
 def ssh_upload(dest: str, key: str, f: Path) -> Path:
     """Upload file to destination using rsync/ssh"""
+    subprocess.check_output(['cioc'])
     cmd = ['rsync', '-av', '-e', f'ssh -i {key}', str(f.absolute()), dest]
     subprocess.check_output(cmd)
     return f
