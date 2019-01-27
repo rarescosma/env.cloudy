@@ -17,11 +17,14 @@ configuration keys you need to provide.
 
 ### Installing
 
-Obtain a Python3.6 virtual environment.
+Install [pyenv](https://github.com/pyenv/pyenv#installation) and Python 3.7.2:
 
-`pip install -r requirements.txt`
+```
+pyenv install 3.7.2
+```
 
-`make dist/cloudy` will give you a one-file PyInstaller executable
+Generate a one-file PyInstaller executable and copy it to `${HOME}/bin`:
 
-`make install` will copy it to `${HOME}/bin`
-
+```
+make && make install
+```
