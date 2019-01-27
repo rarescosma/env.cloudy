@@ -4,4 +4,5 @@ config.yaml
 build
 dist
 *.spec
+.python-version
 
