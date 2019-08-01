@@ -56,9 +56,10 @@ def effect_cmd(cmd: List, _: Any) -> Any:
         subprocess.check_output(cmd)
     return _
 
-def ssh_upload(dest: str, key: str, f: Path) -> Path:
+def ssh_upload(dest: str, key: str, use_knock: bool, f: Path) -> Path:
     """Upload file to destination using rsync/ssh"""
-    subprocess.check_output(['cioc'])
+    if use_knock:
+        subprocess.check_output(['cioc'])
     cmd = ['rsync', '-av', '-e', f'ssh -i {key}', str(f.absolute()), dest]
     subprocess.check_output(cmd)
     return f
