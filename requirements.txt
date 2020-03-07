@@ -1,5 +1,5 @@
 click==6.7
 pyinotify==0.9.6
-PyInstaller==3.4
+PyInstaller==3.6
 PyYAML==5.1
 requests==2.20.0
