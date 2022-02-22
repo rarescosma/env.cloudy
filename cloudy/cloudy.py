@@ -1,9 +1,9 @@
+""" Check for new files and upload them into the clouds. """
 import os
 import string
+from functools import partial, reduce
 from pathlib import Path
 from random import choices
-from functools import partial, reduce
-from subprocess import check_output
 from typing import Callable, Optional
 
 import click
@@ -15,54 +15,49 @@ PATH_ARG = partial(click.Path, exists=True, resolve_path=True)
 
 
 @group()
-def cli():
+def cli() -> None:
     """Wrap command group"""
-    pass
 
 
 @cli.command()
-def test():
+def test() -> None:
     """Run tests through CLI... I know, right?"""
     # test config_from_file
-    c_path = Path(f'/tmp/{_random_str()}')
-    c_path.write_text('foo: bar')
-    assert lib.config_from_file(c_path) == dict(foo='bar')
+    c_path = Path(f"/tmp/{_random_str()}")
+    c_path.write_text("foo: bar")
+    assert lib.config_from_file(c_path) == dict(foo="bar")
 
-    print('OK!')
+    print("OK!")
 
 
 @cli.command()
-@argument(
-    'to_watch',
-    type=PATH_ARG(dir_okay=True, file_okay=False)
-)
+@argument("to_watch", type=PATH_ARG(dir_okay=True, file_okay=False))
 @option(
-    'config', '--config', '-c',
+    "config",
+    "--config",
+    "-c",
     type=PATH_ARG(dir_okay=False, file_okay=True),
-    default=None
+    default=None,
 )
-def watch(to_watch: str, config: Optional[str] = None):
+def watch(to_watch: str, config: Optional[str] = None) -> None:
     """Watch directory"""
-    print(f'Watching {to_watch}...')
+    print(f"Watching {to_watch}...")
     cfg = lib.config_from_file(Path(config) if config else _config_path())
-    exec_before = cfg.get('exec_before', [])
-    use_knock = bool(cfg['ssh'].get('use_knock', False))
+    exec_before = cfg.get("exec_before", [])
+    use_knock = bool(cfg["ssh"].get("use_knock", False))
 
     handler = _compose(
         partial(lib.effect_cmd, exec_before),
         partial(
-            lib.ssh_upload,
-            cfg['ssh']['dest'],
-            cfg['ssh']['key'],
-            use_knock
+            lib.ssh_upload, cfg["ssh"]["dest"], cfg["ssh"]["key"], use_knock
         ),
-        partial(lib.bitly_shorten, cfg['bitly_token'], cfg['web_root']),
+        partial(lib.bitly_shorten, cfg["bitly_token"], cfg["web_root"]),
         lib.copy_to_clipboard,
-        lambda x: f'New Screenshot: {x}',
+        lambda x: f"New Screenshot: {x}",
         lib.show_notification,
     )
 
-    error_handler = partial(lib.show_notification, urgency='critical')
+    error_handler = partial(lib.show_notification, urgency="critical")
 
     notifier = lib.watch_dir(
         Path(to_watch),
@@ -82,22 +77,18 @@ def watch(to_watch: str, config: Optional[str] = None):
 
 def _random_str(n: int = 12) -> str:
     """Produce a random string of length n"""
-    return ''.join(choices(string.ascii_uppercase + string.digits, k=n))
+    return "".join(choices(string.ascii_uppercase + string.digits, k=n))
 
 
-def _config_path(f_name: str = '../config.yaml') -> Path:
+def _config_path(f_name: str = "../config.yaml") -> Path:
     """Returns an absolute path to the config file"""
     return Path(os.path.abspath(os.path.dirname(__file__))) / f_name
 
 
 def _compose(*functions: Callable) -> Callable:
     """Compose a bunch of functions"""
-    return reduce(
-        lambda f, g: lambda x: f(g(x)),
-        functions[::-1],
-        lambda x: x
-    )
+    return reduce(lambda f, g: lambda x: f(g(x)), functions[::-1], lambda x: x)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     cli()
