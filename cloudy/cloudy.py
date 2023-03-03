@@ -15,6 +15,7 @@ PATH_ARG = partial(click.Path, exists=True, resolve_path=True)
 
 
 @group()
+@click.version_option()
 def cli() -> None:
     """Wrap command group"""
 
