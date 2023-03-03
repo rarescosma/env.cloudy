@@ -4,6 +4,7 @@ Opinionated screenshot watcher
 import os
 import subprocess
 from pathlib import Path
+import traceback
 from typing import Any, Callable, Dict, List
 from urllib.parse import quote_plus
 
@@ -47,6 +48,7 @@ class ProcessChange(pyinotify.ProcessEvent):
         try:
             self.__handler(Path(os.path.join(event.path, event.name)))
         except Exception as exc:
+            print(traceback.format_exc())
             self.__error_handler(exc)
 
 
