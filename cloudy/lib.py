@@ -76,13 +76,13 @@ def ssh_upload(dest: str, key: str, use_knock: bool, file_path: Path) -> Path:
 
 def bitly_shorten(token: str, web_root: str, file_path: Path) -> str:
     """Shorten the file URL through bitly"""
-    return requests.get(
-        "https://api-ssl.bitly.com/v3/shorten",
-        params={
-            "access_token": token,
-            "longUrl": f"{web_root}/{quote_plus(file_path.name)}",
+    return requests.post(
+        "https://api-ssl.bitly.com/v4/shorten",
+        json={
+            "long_url": f"{web_root}/{quote_plus(file_path.name)}",
         },
-    ).json()["data"]["url"]
+        headers={"Authorization": f"Bearer {token}"},
+    ).json()["link"]
 
 
 def copy_to_clipboard(what: str) -> str:
