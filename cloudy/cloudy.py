@@ -10,12 +10,13 @@ import click
 from click import argument, group, option
 
 from cloudy import lib
+from cloudy._version import __version__
 
 PATH_ARG = partial(click.Path, exists=True, resolve_path=True)
 
 
 @group()
-@click.version_option()
+@click.version_option(__version__)
 def cli() -> None:
     """Wrap command group"""
 

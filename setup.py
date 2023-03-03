@@ -1,6 +1,6 @@
 from codecs import open
 from os import path
-
+import re
 from setuptools import setup, find_packages
 
 dot = path.abspath(path.dirname(__file__))
@@ -13,9 +13,17 @@ install_requires = [x.strip() for x in all_reqs if 'git+' not in x]
 dependency_links = [x.strip().replace('git+', '') for x in all_reqs if
                     x.startswith('git+')]
 
+# parse the version file
+ver_content = open("cloudy/_version.py", "rt").read()
+ver_match = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]", ver_content, re.M)
+if ver_match:
+    version = ver_match.group(1)
+else:
+    raise RuntimeError("Unable to find version string")
+
 setup(
     name='cloudy',
-    version='0.1.1',
+    version=version,
     description='opinionated & personal screenshot handler',
     long_description=(
         'Watches a directory for file changes, uploads them to a remote,'
