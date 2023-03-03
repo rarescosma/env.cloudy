@@ -10,8 +10,7 @@ dist/$(PROJECT): .venv/freeze
 
 install: dist/$(PROJECT)
 	mkdir -p $(DESTDIR)$(BINDIR)
-	cp dist/$(PROJECT) $(DESTDIR)$(BINDIR)/
-	chmod 755 $(DESTDIR)$(BINDIR)/$(PROJECT)
+	install -m 755 dist/$(PROJECT) $(DESTDIR)$(BINDIR)/
 
 clean:
 	rm -rf dist build *.spec __pycache__ *.egg-info .python-version .venv
