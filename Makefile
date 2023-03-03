@@ -14,7 +14,6 @@ install: dist/$(PROJECT)
 
 clean:
 	rm -rf dist build *.spec __pycache__ *.egg-info .python-version .venv
-	rm -f $(DESTDIR)$(BINDIR)/$(PROJECT)
 
 .python-version:
 	pyenv local 3.11.1
