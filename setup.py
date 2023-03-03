@@ -15,7 +15,7 @@ dependency_links = [x.strip().replace('git+', '') for x in all_reqs if
 
 setup(
     name='cloudy',
-    version='0.0.1',
+    version='0.1.1',
     description='opinionated & personal screenshot handler',
     long_description=(
         'Watches a directory for file changes, uploads them to a remote,'
