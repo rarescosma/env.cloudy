@@ -2,15 +2,38 @@
 Opinionated screenshot watcher
 """
 import os
-import subprocess
-from pathlib import Path
 import traceback
+from functools import wraps
+from pathlib import Path
+from subprocess import PIPE, Popen, check_output
 from typing import Any, Callable, Dict, List
 from urllib.parse import quote_plus
 
 import pyinotify
 import requests
 import yaml
+
+
+# monkeypatch Popen to make it compatible with PyInstaller
+# see https://github.com/pyinstaller/pyinstaller/tree/master/doc/runtime-information.rst
+def monkey_patch_pyi(thing: Callable) -> Callable:
+    @wraps(thing)
+    def inner(*args, **kwargs):  # type: ignore
+        os_env = dict(os.environ)
+        lp_key = "LD_LIBRARY_PATH"
+        lp_orig = os_env.get(lp_key + "_ORIG")
+        kwargs["env"] = kwargs.get("env", os_env)
+        if lp_orig is not None:
+            kwargs["env"][lp_key] = lp_orig
+        else:
+            kwargs["env"].pop(lp_key, None)
+        return thing(*args, **kwargs)
+
+    return inner
+
+
+Popen = monkey_patch_pyi(Popen)  # type: ignore
+check_output = monkey_patch_pyi(check_output)
 
 
 # Configuration
@@ -56,14 +79,14 @@ class ProcessChange(pyinotify.ProcessEvent):
 def effect_cmd(cmd: List, _: Any) -> Any:
     """Exec command as effect but proxy input value"""
     if cmd:
-        subprocess.check_output(cmd)
+        check_output(cmd)
     return _
 
 
 def ssh_upload(dest: str, key: str, use_knock: bool, file_path: Path) -> Path:
     """Upload file to destination using rsync/ssh"""
     if use_knock:
-        subprocess.check_output(["cioc"])
+        check_output(["cioc"])
     cmd = [
         "rsync",
         "-av",
@@ -72,7 +95,7 @@ def ssh_upload(dest: str, key: str, use_knock: bool, file_path: Path) -> Path:
         str(file_path.absolute()),
         dest,
     ]
-    subprocess.check_output(cmd)
+    check_output(cmd)
     return file_path
 
 
@@ -91,7 +114,7 @@ def copy_to_clipboard(what: str) -> str:
     """Put the input string into all known clipboards"""
     # Primary + clipboard
     # pylint: disable=consider-using-with
-    xsel_proc = subprocess.Popen(["xsel", "-pbi"], stdin=subprocess.PIPE)
+    xsel_proc = Popen(["xsel", "-pbi"], stdin=PIPE)
     xsel_proc.communicate(bytes(what, encoding="utf-8"))
     return what
 
@@ -99,5 +122,5 @@ def copy_to_clipboard(what: str) -> str:
 def show_notification(what: Any, urgency: str = "normal") -> str:
     """Show a notification about the new screenshot"""
     coerced = str(what)
-    subprocess.check_output(["notify-send", "-u", urgency, coerced])
+    check_output(["notify-send", "-u", urgency, coerced])
     return coerced
