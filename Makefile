@@ -2,6 +2,9 @@ PROJECT=cloudy
 ENTRYPOINT=$(PROJECT)/$(PROJECT).py
 PREFIX?=$(HOME)
 BINDIR?=$(PREFIX)/bin
+BUILDPATH=dist/static
+BUILD_VERSION:=latest
+ARCH=linux-x86_64
 
 all: dist/$(PROJECT)
 
@@ -21,3 +24,14 @@ clean:
 .venv/freeze: .python-version
 	test -f .venv/bin/activate || python3 -mvenv .venv --prompt $(PROJECT)
 	. .venv/bin/activate && pip install -e . && pip freeze > .venv/freeze
+
+build_static:
+	./portable/alpine-build.sh
+
+pack_static:
+	@rm -rf pack
+	@mkdir -p pack
+	@cd ${BUILDPATH} && tar -czvf cloudy-${BUILD_VERSION}-$(ARCH).tar.gz *
+	@mv ${BUILDPATH}/cloudy-${BUILD_VERSION}-$(ARCH).tar.gz pack
+	@openssl sha256 < pack/cloudy-${BUILD_VERSION}-$(ARCH).tar.gz | sed 's/^.* //' > pack/cloudy-${BUILD_VERSION}-$(ARCH).sha256sum
+	@cat pack/cloudy-${BUILD_VERSION}-$(ARCH).sha256sum
