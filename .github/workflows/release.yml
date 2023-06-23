@@ -17,17 +17,22 @@ jobs:
         run: |
           apk add --no-cache make
           echo "version=${GITHUB_REF#refs/tags/}" >> "$GITHUB_ENV"
-      - name: Build release
+      - name: Build binary
         run: |
           make build_static
           dist/static/cloudy --version
+      - name: Run CLI tests
+        run: |
+          dist/static/cloudy test
+      - name: Generate tarball
+        run: |
           make pack_static BUILD_VERSION=${{ env.version }}
-      - name: Upload release file
+      - name: Upload tarball
         uses: actions/upload-artifact@v1
         with:
           name: cloudy-${{ env.version }}-linux-x86_64.tar.gz
           path: pack/cloudy-${{ env.version }}-linux-x86_64.tar.gz
-      - name: Upload checksum file
+      - name: Upload checksum
         uses: actions/upload-artifact@v1
         with:
           name: cloudy-${{ env.version }}-linux-x86_64.sha256sum
@@ -44,12 +49,12 @@ jobs:
         id: tag
         run: |
           echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_ENV"
-      - name: Download Linux release file
+      - name: Download Linux tarball
         uses: actions/download-artifact@master
         with:
           name: cloudy-${{ env.tag }}-linux-x86_64.tar.gz
           path: pack/
-      - name: Download Linux checksum file
+      - name: Download Linux checksum
         uses: actions/download-artifact@master
         with:
           name: cloudy-${{ env.tag }}-linux-x86_64.sha256sum
@@ -64,7 +69,7 @@ jobs:
           release_name: ${{ env.tag }}
           draft: false
           prerelease: false
-      - name: Upload Linux release file asset
+      - name: Upload Linux tarball asset
         uses: actions/upload-release-asset@v1.0.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -73,7 +78,7 @@ jobs:
           asset_path: pack/cloudy-${{ env.tag }}-linux-x86_64.tar.gz
           asset_name: cloudy-${{ env.tag }}-linux-x86_64.tar.gz
           asset_content_type: application/gzip
-      - name: Upload Linux checksum file asset
+      - name: Upload Linux checksum asset
         uses: actions/upload-release-asset@v1.0.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

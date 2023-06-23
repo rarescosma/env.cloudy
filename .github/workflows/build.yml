@@ -23,10 +23,15 @@ jobs:
         run: |
           apk add --no-cache make
           echo "version=$(echo ${GITHUB_SHA} | cut -c1-8)" >> "$GITHUB_ENV"
-      - name: Build release
+      - name: Build binary
         run: |
           make build_static
           dist/static/cloudy --version
+      - name: Run CLI tests
+        run: |
+          dist/static/cloudy test
+      - name: Generate tarball
+        run: |
           make pack_static BUILD_VERSION=${{ env.version }}
       - name: Upload release file
         uses: actions/upload-artifact@v1
