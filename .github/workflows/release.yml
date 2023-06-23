@@ -1,0 +1,84 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - '*.*.*'
+
+jobs:
+  Linux:
+    runs-on: ubuntu-20.04
+    container: python:3.11-alpine
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build prep
+        id: build_prep
+        run: |
+          apk add --no-cache make
+          echo "version=${GITHUB_REF#refs/tags/}" >> "$GITHUB_ENV"
+      - name: Build release
+        run: |
+          make build_static
+          dist/static/cloudy --version
+          make pack_static BUILD_VERSION=${{ env.version }}
+      - name: Upload release file
+        uses: actions/upload-artifact@v1
+        with:
+          name: cloudy-${{ env.version }}-linux-x86_64.tar.gz
+          path: pack/cloudy-${{ env.version }}-linux-x86_64.tar.gz
+      - name: Upload checksum file
+        uses: actions/upload-artifact@v1
+        with:
+          name: cloudy-${{ env.version }}-linux-x86_64.sha256sum
+          path: pack/cloudy-${{ env.version }}-linux-x86_64.sha256sum
+
+  Release:
+    needs: [Linux]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Get tag
+        id: tag
+        run: |
+          echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_ENV"
+      - name: Download Linux release file
+        uses: actions/download-artifact@master
+        with:
+          name: cloudy-${{ env.tag }}-linux-x86_64.tar.gz
+          path: pack/
+      - name: Download Linux checksum file
+        uses: actions/download-artifact@master
+        with:
+          name: cloudy-${{ env.tag }}-linux-x86_64.sha256sum
+          path: pack/
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.tag }}
+          release_name: ${{ env.tag }}
+          draft: false
+          prerelease: false
+      - name: Upload Linux release file asset
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: pack/cloudy-${{ env.tag }}-linux-x86_64.tar.gz
+          asset_name: cloudy-${{ env.tag }}-linux-x86_64.tar.gz
+          asset_content_type: application/gzip
+      - name: Upload Linux checksum file asset
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: pack/cloudy-${{ env.tag }}-linux-x86_64.sha256sum
+          asset_name: cloudy-${{ env.tag }}-linux-x86_64.sha256sum
+          asset_content_type: text/plain
