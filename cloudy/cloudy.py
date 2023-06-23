@@ -5,6 +5,8 @@ from functools import partial, reduce
 from pathlib import Path
 from random import choices
 from typing import Callable, Optional
+from subprocess import Popen, check_output
+from unittest.mock import patch
 
 import click
 from click import argument, group, option
@@ -19,6 +21,7 @@ PATH_ARG = partial(click.Path, exists=True, resolve_path=True)
 @click.version_option(__version__)
 def cli() -> None:
     """Wrap command group"""
+    patch("subprocess.Popen", lib.monkey_patch_pyi(Popen), spec=True).start()
 
 
 @cli.command()
@@ -28,6 +31,11 @@ def test() -> None:
     c_path = Path(f"/tmp/{_random_str()}")
     c_path.write_text("foo: bar")
     assert lib.config_from_file(c_path) == dict(foo="bar")
+
+    # test pyinstaller compat
+    os.environ["LD_LIBRARY_PATH"] = "foo"
+    os.environ["LD_LIBRARY_PATH_ORIG"] = "not-foo"
+    assert "LD_LIBRARY_PATH=not-foo" in str(check_output(["env"]))
 
     print("OK!")
 

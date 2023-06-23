@@ -14,7 +14,7 @@ import requests
 import yaml
 
 
-# monkeypatch Popen to make it compatible with PyInstaller
+# used to monkeypatch subprocess primitives for pyinstaller compatibility
 # see https://github.com/pyinstaller/pyinstaller/tree/master/doc/runtime-information.rst
 def monkey_patch_pyi(thing: Callable) -> Callable:
     @wraps(thing)
@@ -30,10 +30,6 @@ def monkey_patch_pyi(thing: Callable) -> Callable:
         return thing(*args, **kwargs)
 
     return inner
-
-
-Popen = monkey_patch_pyi(Popen)  # type: ignore
-check_output = monkey_patch_pyi(check_output)
 
 
 # Configuration
