@@ -19,21 +19,22 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Get build version
-        id: build_version
+        id: build_prep
         run: |
+          apk add --no-cache make
           echo ::set-output name=version::$(echo ${GITHUB_SHA} | cut -c1-8)
       - name: Build release
         run: |
           make build_static
           dist/static/cloudy --version
-          make pack_static BUILD_VERSION=${{ steps.build_version.outputs.version }}
+          make pack_static BUILD_VERSION=${{ steps.build_prep.outputs.version }}
       - name: Upload release file
         uses: actions/upload-artifact@v1
         with:
-          name: cloudy-${{ steps.build_version.outputs.version }}-linux-x86_64.tar.gz
-          path: pack/cloudy-${{ steps.build_version.outputs.version }}-linux-x86_64.tar.gz
+          name: cloudy-${{ steps.build_prep.outputs.version }}-linux-x86_64.tar.gz
+          path: pack/cloudy-${{ steps.build_prep.outputs.version }}-linux-x86_64.tar.gz
       - name: Upload checksum file
         uses: actions/upload-artifact@v1
         with:
-          name: cloudy-${{ steps.build_version.outputs.version }}-linux-x86_64.sha256sum
-          path: pack/cloudy-${{ steps.build_version.outputs.version }}-linux-x86_64.sha256sum
+          name: cloudy-${{ steps.build_prep.outputs.version }}-linux-x86_64.sha256sum
+          path: pack/cloudy-${{ steps.build_prep.outputs.version }}-linux-x86_64.sha256sum
