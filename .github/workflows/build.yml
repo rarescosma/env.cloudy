@@ -4,12 +4,6 @@ on:
   push:
     branches:
       - '*'
-    paths:
-      - .github/workflows/build.yml
-      - cloudy/**/*
-      - Makefile
-      - requirements.txt
-      - setup.py
 
 jobs:
   Linux:
