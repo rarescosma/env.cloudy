@@ -31,7 +31,7 @@ build_static:
 pack_static:
 	@rm -rf pack
 	@mkdir -p pack
-	@cd ${BUILDPATH} && tar -czvf cloudy-${BUILD_VERSION}-$(ARCH).tar.gz *
-	@mv ${BUILDPATH}/cloudy-${BUILD_VERSION}-$(ARCH).tar.gz pack
-	@openssl sha256 < pack/cloudy-${BUILD_VERSION}-$(ARCH).tar.gz | sed 's/^.* //' > pack/cloudy-${BUILD_VERSION}-$(ARCH).sha256sum
-	@cat pack/cloudy-${BUILD_VERSION}-$(ARCH).sha256sum
+	@cd ${BUILDPATH} && tar -czvf ${PROJECT}-${BUILD_VERSION}-$(ARCH).tar.gz *
+	@mv ${BUILDPATH}/${PROJECT}-${BUILD_VERSION}-$(ARCH).tar.gz pack
+	@openssl sha256 < pack/${PROJECT}-${BUILD_VERSION}-$(ARCH).tar.gz | sed 's/^.* //' > pack/${PROJECT}-${BUILD_VERSION}-$(ARCH).sha256sum
+	@cat pack/${PROJECT}-${BUILD_VERSION}-$(ARCH).sha256sum
