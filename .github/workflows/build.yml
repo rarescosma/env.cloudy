@@ -33,12 +33,12 @@ jobs:
       - name: Generate tarball
         run: |
           make pack_static BUILD_VERSION=${{ env.version }}
-      - name: Upload release file
+      - name: Upload tarball
         uses: actions/upload-artifact@v1
         with:
           name: cloudy-${{ env.version }}-linux-x86_64.tar.gz
           path: pack/cloudy-${{ env.version }}-linux-x86_64.tar.gz
-      - name: Upload checksum file
+      - name: Upload checksum
         uses: actions/upload-artifact@v1
         with:
           name: cloudy-${{ env.version }}-linux-x86_64.sha256sum
