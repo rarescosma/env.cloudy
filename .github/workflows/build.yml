@@ -18,7 +18,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Get build version
+      - name: Build prep
         id: build_prep
         run: |
           apk add --no-cache make
