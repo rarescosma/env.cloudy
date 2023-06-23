@@ -22,19 +22,19 @@ jobs:
         id: build_prep
         run: |
           apk add --no-cache make
-          echo ::set-output name=version::$(echo ${GITHUB_SHA} | cut -c1-8)
+          echo "version=$(echo ${GITHUB_SHA} | cut -c1-8)" >> "$GITHUB_ENV"
       - name: Build release
         run: |
           make build_static
           dist/static/cloudy --version
-          make pack_static BUILD_VERSION=${{ steps.build_prep.outputs.version }}
+          make pack_static BUILD_VERSION=${{ env.version }}
       - name: Upload release file
         uses: actions/upload-artifact@v1
         with:
-          name: cloudy-${{ steps.build_prep.outputs.version }}-linux-x86_64.tar.gz
-          path: pack/cloudy-${{ steps.build_prep.outputs.version }}-linux-x86_64.tar.gz
+          name: cloudy-${{ env.version }}-linux-x86_64.tar.gz
+          path: pack/cloudy-${{ env.version }}-linux-x86_64.tar.gz
       - name: Upload checksum file
         uses: actions/upload-artifact@v1
         with:
-          name: cloudy-${{ steps.build_prep.outputs.version }}-linux-x86_64.sha256sum
-          path: pack/cloudy-${{ steps.build_prep.outputs.version }}-linux-x86_64.sha256sum
+          name: cloudy-${{ env.version }}-linux-x86_64.sha256sum
+          path: pack/cloudy-${{ env.version }}-linux-x86_64.sha256sum
