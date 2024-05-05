@@ -14,9 +14,12 @@ import requests
 import yaml
 
 
-# used to monkeypatch subprocess primitives for pyinstaller compatibility
-# see https://github.com/pyinstaller/pyinstaller/tree/master/doc/runtime-information.rst
 def monkey_patch_pyi(thing: Callable) -> Callable:
+    """
+    used to monkeypatch subprocess primitives for pyinstaller compatibility
+    see https://github.com/pyinstaller/pyinstaller/tree/master/doc/runtime-information.rst
+    """
+
     @wraps(thing)
     def inner(*args, **kwargs):  # type: ignore
         os_env = dict(os.environ)
@@ -99,9 +102,7 @@ def bitly_shorten(token: str, web_root: str, file_path: Path) -> str:
     """Shorten the file URL through bitly"""
     return requests.post(
         "https://api-ssl.bitly.com/v4/shorten",
-        json={
-            "long_url": f"{web_root}/{quote_plus(file_path.name)}",
-        },
+        json={"long_url": f"{web_root}/{quote_plus(file_path.name)}"},
         headers={"Authorization": f"Bearer {token}"},
     ).json()["link"]
 

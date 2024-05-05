@@ -4,8 +4,8 @@ import string
 from functools import partial, reduce
 from pathlib import Path
 from random import choices
-from typing import Callable, Optional
 from subprocess import Popen, check_output
+from typing import Callable, Optional
 from unittest.mock import patch
 
 import click
@@ -30,7 +30,7 @@ def test() -> None:
     # test config_from_file
     c_path = Path(f"/tmp/{_random_str()}")
     c_path.write_text("foo: bar")
-    assert lib.config_from_file(c_path) == dict(foo="bar")
+    assert lib.config_from_file(c_path) == {"foo": "bar"}
 
     # test pyinstaller compat
     os.environ["LD_LIBRARY_PATH"] = "foo"
