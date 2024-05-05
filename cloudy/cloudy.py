@@ -71,6 +71,7 @@ def watch(to_watch: str, config: Optional[str] = None) -> None:
 
     notifier = lib.watch_dir(
         Path(to_watch),
+        rec=bool(cfg.get('rec', True)),
         handler=handler,
         error_handler=error_handler,
     )
