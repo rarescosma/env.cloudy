@@ -17,10 +17,12 @@ configuration keys you need to provide.
 
 ### Installing
 
-Install [pyenv](https://github.com/pyenv/pyenv#installation) and Python 3.7.2:
+Install [pyenv](https://github.com/pyenv/pyenv#installation) and Python 3.11:
 
 ```
-pyenv install 3.7.2
+pyenv install $(pyenv install --list \
+ | sed 's/^[[:space:]]*//' | grep '^3.11' \
+ | sort --version-sort | tail -1)
 ```
 
 Generate a one-file PyInstaller executable and copy it to `${HOME}/bin`:
