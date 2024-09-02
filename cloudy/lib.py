@@ -83,10 +83,8 @@ def effect_cmd(cmd: List, _: Any) -> Any:
     return _
 
 
-def ssh_upload(dest: str, key: str, use_knock: bool, file_path: Path) -> Path:
+def ssh_upload(dest: str, key: str, file_path: Path) -> Path:
     """Upload file to destination using rsync/ssh"""
-    if use_knock:
-        check_output(["cioc"])
     cmd = [
         "rsync",
         "-av",

@@ -60,11 +60,10 @@ def watch(config: str) -> None:
 
     cfg = lib.config_from_file(cfg_path)
     exec_before = cfg.get("exec_before", [])
-    use_knock = bool(cfg["ssh"].get("use_knock", False))
 
     handler = _compose(
         partial(lib.effect_cmd, exec_before),
-        partial(lib.ssh_upload, cfg["ssh"]["dest"], cfg["ssh"]["key"], use_knock),
+        partial(lib.ssh_upload, cfg["ssh"]["dest"], cfg["ssh"]["key"]),
         partial(lib.bitly_shorten, cfg["bitly_token"], cfg["url_prefix"]),
         lib.copy_to_clipboard,
         lambda x: f"New Screenshot: {x}",
