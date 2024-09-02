@@ -2,5 +2,5 @@ click~=8.1.0
 pyinotify==0.9.6
 pyinstaller~=6.10.0
 PyYAML~=6.0
-requests~=2.31.0
+requests~=2.32.0
 pyasyncore~=1.0.4
