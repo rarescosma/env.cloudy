@@ -1,8 +1,8 @@
 # watch this directory for new images
-images: /path/to/images
+watch_dir: /path/to/images
 
 # prepend this to the generated image URLs
-web_root: https://example.com
+url_prefix: https://example.com
 
 # bitly token, generate it from https://app.bitly.com/settings/api
 bitly_token: babafacecaca

@@ -65,7 +65,7 @@ def watch(config: str) -> None:
     handler = _compose(
         partial(lib.effect_cmd, exec_before),
         partial(lib.ssh_upload, cfg["ssh"]["dest"], cfg["ssh"]["key"], use_knock),
-        partial(lib.bitly_shorten, cfg["bitly_token"], cfg["web_root"]),
+        partial(lib.bitly_shorten, cfg["bitly_token"], cfg["url_prefix"]),
         lib.copy_to_clipboard,
         lambda x: f"New Screenshot: {x}",
         lib.show_notification,
@@ -73,9 +73,9 @@ def watch(config: str) -> None:
 
     error_handler = partial(lib.show_notification, urgency="critical")
 
-    print(f"Watching '{cfg['images']}'")
+    print(f"Watching '{cfg['watch_dir']}'")
     notifier = lib.watch_dir(
-        Path(cfg["images"]),
+        Path(cfg["watch_dir"]),
         rec=bool(cfg.get("rec", True)),
         handler=handler,
         error_handler=error_handler,

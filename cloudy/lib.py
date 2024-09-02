@@ -99,11 +99,11 @@ def ssh_upload(dest: str, key: str, use_knock: bool, file_path: Path) -> Path:
     return file_path
 
 
-def bitly_shorten(token: str, web_root: str, file_path: Path) -> str:
+def bitly_shorten(token: str, url_prefix: str, file_path: Path) -> str:
     """Shorten the file URL through bitly"""
     return requests.post(
         "https://api-ssl.bitly.com/v4/shorten",
-        json={"long_url": f"{web_root}/{quote_plus(file_path.name)}"},
+        json={"long_url": f"{url_prefix}/{quote_plus(file_path.name)}"},
         headers={"Authorization": f"Bearer {token}"},
         timeout=5,
     ).json()["link"]
