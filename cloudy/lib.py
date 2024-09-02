@@ -1,6 +1,7 @@
 """
 Opinionated screenshot watcher
 """
+
 import os
 import traceback
 from functools import wraps

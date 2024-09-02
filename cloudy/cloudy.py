@@ -1,15 +1,18 @@
 """ Check for new files and upload them into the clouds. """
+
 import os
 import string
+import sys
 from functools import partial, reduce
 from pathlib import Path
 from random import choices
 from subprocess import Popen, check_output
-from typing import Callable, Optional
+from typing import Callable
 from unittest.mock import patch
 
 import click
-from click import argument, group, option
+from click import group, option
+from xdg.BaseDirectory import xdg_config_home
 
 from cloudy import lib
 from cloudy._version import __version__
@@ -41,26 +44,27 @@ def test() -> None:
 
 
 @cli.command()
-@argument("to_watch", type=PATH_ARG(dir_okay=True, file_okay=False))
 @option(
     "config",
     "--config",
     "-c",
     type=PATH_ARG(dir_okay=False, file_okay=True),
-    default=None,
+    default=os.path.join(xdg_config_home, "cloudy.yaml"),
 )
-def watch(to_watch: str, config: Optional[str] = None) -> None:
+def watch(config: str) -> None:
     """Watch directory"""
-    print(f"Watching {to_watch}...")
-    cfg = lib.config_from_file(Path(config) if config else _config_path())
+    cfg_path = Path(config)
+    if not cfg_path.exists() or not cfg_path.is_file():
+        print(f"Could not open config file at '{config}'. Bailing...", file=sys.stderr)
+        sys.exit(1)
+
+    cfg = lib.config_from_file(cfg_path)
     exec_before = cfg.get("exec_before", [])
     use_knock = bool(cfg["ssh"].get("use_knock", False))
 
     handler = _compose(
         partial(lib.effect_cmd, exec_before),
-        partial(
-            lib.ssh_upload, cfg["ssh"]["dest"], cfg["ssh"]["key"], use_knock
-        ),
+        partial(lib.ssh_upload, cfg["ssh"]["dest"], cfg["ssh"]["key"], use_knock),
         partial(lib.bitly_shorten, cfg["bitly_token"], cfg["web_root"]),
         lib.copy_to_clipboard,
         lambda x: f"New Screenshot: {x}",
@@ -69,9 +73,10 @@ def watch(to_watch: str, config: Optional[str] = None) -> None:
 
     error_handler = partial(lib.show_notification, urgency="critical")
 
+    print(f"Watching '{cfg['images']}'")
     notifier = lib.watch_dir(
-        Path(to_watch),
-        rec=bool(cfg.get('rec', True)),
+        Path(cfg["images"]),
+        rec=bool(cfg.get("rec", True)),
         handler=handler,
         error_handler=error_handler,
     )
@@ -89,11 +94,6 @@ def watch(to_watch: str, config: Optional[str] = None) -> None:
 def _random_str(n: int = 12) -> str:
     """Produce a random string of length n"""
     return "".join(choices(string.ascii_uppercase + string.digits, k=n))
-
-
-def _config_path(f_name: str = "../config.yaml") -> Path:
-    """Returns an absolute path to the config file"""
-    return Path(os.path.abspath(os.path.dirname(__file__))) / f_name
 
 
 def _compose(*functions: Callable) -> Callable:
