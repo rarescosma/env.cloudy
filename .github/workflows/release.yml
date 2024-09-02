@@ -11,7 +11,7 @@ jobs:
     container: python:3.12-alpine
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Build prep
         id: build_prep
         run: |
@@ -28,12 +28,12 @@ jobs:
         run: |
           make pack_static BUILD_VERSION=${{ env.version }}
       - name: Upload tarball
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v4
         with:
           name: cloudy-${{ env.version }}-linux-x86_64.tar.gz
           path: pack/cloudy-${{ env.version }}-linux-x86_64.tar.gz
       - name: Upload checksum
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v4
         with:
           name: cloudy-${{ env.version }}-linux-x86_64.sha256sum
           path: pack/cloudy-${{ env.version }}-linux-x86_64.sha256sum
@@ -44,18 +44,18 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Get tag
         id: tag
         run: |
           echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_ENV"
       - name: Download Linux tarball
-        uses: actions/download-artifact@master
+        uses: actions/download-artifact@v4
         with:
           name: cloudy-${{ env.tag }}-linux-x86_64.tar.gz
           path: pack/
       - name: Download Linux checksum
-        uses: actions/download-artifact@master
+        uses: actions/download-artifact@v4
         with:
           name: cloudy-${{ env.tag }}-linux-x86_64.sha256sum
           path: pack/
