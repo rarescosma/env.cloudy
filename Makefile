@@ -19,7 +19,7 @@ clean:
 	rm -rf dist build *.spec __pycache__ *.egg-info .python-version .venv
 
 .python-version:
-	pyenv local 3.11
+	pyenv local 3.12
 
 .venv/freeze: .python-version
 	test -f .venv/bin/activate || python3 -mvenv .venv --prompt $(PROJECT)

@@ -17,11 +17,11 @@ configuration keys you need to provide.
 
 ### Installing
 
-Install [pyenv](https://github.com/pyenv/pyenv#installation) and Python 3.11:
+Install [pyenv](https://github.com/pyenv/pyenv#installation) and Python 3.12:
 
 ```
 pyenv install $(pyenv install --list \
- | sed 's/^[[:space:]]*//' | grep '^3.11' \
+ | sed 's/^[[:space:]]*//' | grep '^3.12' \
  | sort --version-sort | tail -1)
 ```
 
